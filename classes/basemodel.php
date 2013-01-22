@@ -14,15 +14,14 @@ class BaseModel {
     public function __construct()
     {
         $this->viewModel = new ViewModel();
-		
-		$this->commonViewData();
+	$this->commonViewData();
     }
-	
-	//establish viewModel data that is required for all views in this method (i.e. the main template)
+
+    //establish viewModel data that is required for all views in this method (i.e. the main template)
     protected function commonViewData() {
 	
-		//e.g. $this->viewModel->set("mainMenu",array("Home" => "/home", "Help" => "/help"));
-	}
+    //e.g. $this->viewModel->set("mainMenu",array("Home" => "/home", "Help" => "/help"));
+    }
 }
 
 ?>
