@@ -36,7 +36,7 @@ a controller should be NameController e.g. `HomeController`, `ErrorController`, 
 - All directories under `/views` should share the name of the controller class, with an upper case first letter, 
 and minus the 'Controller' part, e.g. Home, Error, etc (upper case first letter is important on Linux).
 - If you want any view to be shown without using a main template, pass a boolean false as the second argument 
-in the `$this->view->output()` call of your controller methods (where the first argument is the data being send 
+in the `$this->view->output()` call of your controller methods (where the first argument is the data being sent 
 to the view).
 - If you define a string as `$this->view->output()`'s second argument, it will look for that string as 
 `/views/stringvalue.php` for that view's template. "maintemplate" is the default value and hence 
