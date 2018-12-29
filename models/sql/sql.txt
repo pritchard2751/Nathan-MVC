@@ -1,0 +1,1 @@
+SQL queries used by models could be added to this folder if appropriate.
