@@ -9,9 +9,9 @@
 session_name("MVVMCTemplate"); 
 session_start();
 
+require_once 'vendor/autoload.php';
 require_once 'core/config/config.php';
 require_once 'core/config/routes.php';
-require_once __DIR__ . '/vendor/autoload.php';
 
 //create the controller loader object
 $controllerLoader = new \Core\helpers\Loader($routes);
