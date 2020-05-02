@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+  app:
+    build:
+      context: .
+      target: base
+      dockerfile: docker/Dockerfile
+    image: nathanmvc-app
+    ports:
+      - 8080:80
+    volumes:
+      - .:/var/www 
+    command: ["apache2-foreground"]

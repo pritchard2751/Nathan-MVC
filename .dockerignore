@@ -1,0 +1,6 @@
+docker
+.git/
+.gitignore
+.DS_Store/
+README.md
+vendor
