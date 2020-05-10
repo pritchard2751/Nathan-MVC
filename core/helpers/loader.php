@@ -1,81 +1,73 @@
 <?php
-/*
- * Purpose: class which maps URL requests to controller object creation.
- */
 
 namespace Core\helpers;
 
-class Loader
-{
+class Loader {
+    const DEFAULT_CONTROLLER_NAME = "home";
+    const DEFAULT_ACTION = "index";
 
-    private $controllerName;
-    private $controllerClass;
-    private $action;
-    private $urlValues;
-    private $defaultControllerName;
+    public $urlParser = null;
+    private $routes = null;
+    private $controllerInstance = null;
+    private $controllerName = "";
+    private $classname = "";
+    private $action = "";
 
-    /**
-     * Set controller name and class
-     * Set current requested action
-     * Set other URL values
-     */
-    public function __construct($routes, $dcn = "home")
-    {
-        $this->defaultControllerName = $dcn;
-        $this->urlValues = $_GET;
+    public function __construct(array $routes, $urlParser){
+        $this->routes = $routes;
+        $this->urlParser = $urlParser;
+        $notFound = false;
+        $controllerValueExists = !empty($this->urlParser->controllerValue);
+        $actionValueExists = !empty($this->urlParser->actionValue);
 
-        //if action is not set, default to index
-        if (!isset($this->urlValues["a"]) || $this->urlValues["a"] == "") {
-            $this->urlValues["a"] = "index";
+        if (!$actionValueExists) {
+            $this->urlParser->actionValue = self::DEFAULT_ACTION;
         }
 
-        //if both controller and action are set, check the URL parts against accepted routes
-        if (isset($this->urlValues["c"]) && isset($this->urlValues["a"])) {
-            //potential route
-            $controller = $this->urlValues["c"];
-            $action = $this->urlValues["a"];
-
-            //verify route
-            if (!array_key_exists($controller, $routes)
-                || !in_array($action, $routes[$controller])) {
-                $this->controllerName = "error";
-                $this->action = "badURL";
+        if($controllerValueExists && $actionValueExists){
+            // TODO: verify and protect route
+            $routeExists = $this->routeExists($this->routes, $this->urlParser->controllerValue, $this->urlParser->actionValue);
+            if(!$routeExists){
+                $notFound = true;
             } else {
-                $this->controllerName = $controller;
-                $this->action = $action;
+                $this->controllerName = $this->urlParser->controllerValue;
+                $this->action = $this->urlParser->actionValue;
             }
+
+        } else if (!$controllerValueExists xor !$actionValueExists) {
+            $notFound = true;
         }
-        //if either the controller or action is not set, show a 404 error
-        else if (isset($_GET["c"])
-            xor isset($_GET["a"])) {
+        else {
+            $this->controllerName = self::DEFAULT_CONTROLLER_NAME;
+        }
+
+        if($notFound) {
             $this->controllerName = "error";
             $this->action = "badURL";
         }
-        //send to the default page if no controller or action set
-        else {
-            $this->controllerName = $this->defaultControllerName;
-            $this->action = "index";
-        }
-
-        $this->controllerClass = ucfirst($this->controllerName) . "Controller";
     }
 
-    public function getAdditionalParams()
-    {
-        $array = array();
-
-        foreach ($this->urlValues as $key => $value) {
-            if ($key != "c" && $key != "a") {
-                $array[$key] = $value;
+    public function routeExists(array $routes, string $controller, string $action): bool {
+        if (!array_key_exists($controller, $routes)
+            || !in_array($action, $routes[$controller])) {
+                return false;
             }
-        }
 
-        return $array;
+        return true;
     }
 
-    public function createController()
-    {
-        $nameSpace = '\\Controllers\\' . $this->controllerClass;
-        return new $nameSpace($this->action, $this->urlValues);
+    public function createControllerInstance() { 
+        $classname = $this->getControllerClassname($this->controllerName);
+        $this->setControllerInstance($this->classname, $this->action, $this->urlParser->params);
+        $namespace = '\\Controllers\\' . $classname;
+        $this->controllerInstance = new $namespace($action, $params);
+    }
+
+    public function getControllerClassname(string $controllerName): string {
+        return ucfirst($controllerName) . "Controller";
+    }
+
+    public function getControllerInstance(): BaseController {
+        return $this->controllerInstance;
     }
 }

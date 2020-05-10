@@ -35,7 +35,8 @@ class BaseController
         //instantiate the view object
         //the class name relates to the sub-folder in the 'views' folder
         //the action relates to the file name within the sub-folder
-        $this->view = new view($className, $action);
+        //TODO: also set the model in here, with the ability to override in the class?
+        $this->view = new View($className, $action);
     }
 
     public function protect($sessionNames)
@@ -56,9 +57,10 @@ class BaseController
      * Execute the requested action
      * @param array[] additional URL parameter key/value pairs
      */
-    public function executeAction($params)
+    public function executeAction()
     {
-        call_user_func_array(array($this, $this->action), $params);
+        // TODO: this could easily raise an error if the action does not exist, needs to be handled by being redirected
+        call_user_func_array(array($this, $this->action), $this->urlValues);
     }
 
     public function redirect($params)
@@ -75,7 +77,7 @@ class BaseController
 
             header("Location:" . $url);
 
-        } else if ($params == "error") {
+        } else if ($params == "error") { //TODO: don't need this
 
             $redirectTo = array(
                 "controller" => "error",

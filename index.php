@@ -1,9 +1,6 @@
 <?php
 /*
- * Project: Nathan MVC
- * File: index.php
  * Purpose: landing page which handles all requests
- * Authors: Sean Knox, Annie Pritchard, James Salmon
  */
 
 session_name("MVVMCTemplate"); 
@@ -13,11 +10,9 @@ require_once 'vendor/autoload.php';
 require_once 'core/config/config.php';
 require_once 'core/config/routes.php';
 
-//create the controller loader object
-$controllerLoader = new \Core\helpers\Loader($routes);
-//get additional URL parameters, that is, those not related to the controller or action
-$params = $controllerLoader->getAdditionalParams();
-//creates the requested controller object based on the 'controller' URL value
-$controller = $controllerLoader->createController();
-//execute the requested controller's requested method based on the 'action' URL value. Controller methods output a View.
-$controller->executeAction($params);
+$urlParser = new \Core\helpers\URLParser($_GET);
+$controllerLoader = new \Core\helpers\Loader($routes, $urlParser);
+$controllerLoader->createControllerInstance();
+$controllerInstance = $controllerLoader->getControllerInstance();
+$controllerInstance->executeAction();
+
