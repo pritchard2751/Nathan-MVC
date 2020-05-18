@@ -4,21 +4,21 @@ namespace Core\helpers;
 
 class URLParser 
 {
-    const CONTROLLER_PARAM = "c";
-    const ACTION_PARAM = "a";
-
-    public $controller_value = "";
-    public $action_value = "";
-    public $params = null;
+    const CONTROLLER_PARAM = 'c';
+    const ACTION_PARAM = 'a';
+    
+    private $controller_value = '';
+    private $action_value = '';
+    private $params = null;
 
     public function __construct($params) 
     {
         $this->params = $params;
-        $this->setController();
-        $this->setAction();
+        $this->configController();
+        $this->configAction();
     }
 
-    private function setController() 
+    private function configController() 
     {
         if (isset($this->params[self::CONTROLLER_PARAM])) {
             $this->controller_value = $this->params[self::CONTROLLER_PARAM];
@@ -26,17 +26,12 @@ class URLParser
         }
     }
 
-    private function setAction() 
+    private function configAction() 
     {
         if (isset($this->params[self::ACTION_PARAM])) {
             $this->action_value = $this->params[self::ACTION_PARAM];
             unset($this->params[self::ACTION_PARAM]);
         }
-    }
-
-    public function getAddtionalURLParams() 
-    {
-        return $this->params;
     }
 
     public function getControllerValue() 
@@ -47,5 +42,10 @@ class URLParser
     public function getActionValue() 
     {
         return $this->action_value;
+    }
+
+    public function getAddtionalURLParams() 
+    {
+        return $this->params;
     }
 }

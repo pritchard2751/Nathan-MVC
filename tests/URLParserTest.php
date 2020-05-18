@@ -9,11 +9,11 @@ class URLParserTest extends TestCase
 
     protected function setUp(): void
     {
-        $params = array("c" => "controller", 
-                        "a" => "action",
-                        "param1" => "foo", 
-                        "param2" => "bar",
-                        "c" => "another_controller"
+        $params = array('c' => 'controller', 
+                        'a' => 'action',
+                        'param1' => 'foo', 
+                        'param2' => 'bar',
+                        'c' => 'another_controller'
         );
     
         $this->URLParser = new URLParser($params);
@@ -22,18 +22,18 @@ class URLParserTest extends TestCase
     public function testGetControllerValue() 
     {
         $actual = $this->URLParser->getControllerValue();
-        $this->assertEquals("another_controller", $actual);
+        $this->assertEquals('another_controller', $actual);
     }
 
     public function testGetActionValue() 
     {
         $actual = $this->URLParser->getActionValue();
-        $this->assertEquals("action", $actual);
+        $this->assertEquals('action', $actual);
     }
 
     public function testGetAddtionalParams() 
     {
-        $expected = array("param1" => "foo", "param2" => "bar");
+        $expected = array('param1' => 'foo', 'param2' => 'bar');
         $actual = $this->URLParser->getAddtionalURLParams();
         $this->assertEquals($expected, $actual);
     }

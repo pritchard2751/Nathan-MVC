@@ -1,7 +1,4 @@
 <?php
-/*
- * Purpose: landing page which handles all requests
- */
 
 session_name("MVVMCTemplate"); 
 session_start();
