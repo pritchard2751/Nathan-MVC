@@ -12,7 +12,7 @@ class ErrorModel extends \Core\helpers\BaseModel
         parent::__construct();
     }
 
-    public function badURL()
+    public function index()
     {
         $this->viewModel->__set("pageTitle", "ERROR - Bad URL");
         return $this->viewModel;

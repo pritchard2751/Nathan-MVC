@@ -9,7 +9,7 @@ class HomeModel extends \Core\helpers\BaseModel
 {
     public function __construct()
     {
-        parent::__construct(DB_PREFIX . "home");
+        parent::__construct(/*DB_PREFIX . */ "home");
     }
 
     public function index()

@@ -11,22 +11,26 @@ class ErrorController extends \Core\helpers\BaseController
     {
         parent::__construct($action, $urlValues);
 
-        //create model object
         $this->model = new \Models\ErrorModel;
     }
 
-    public function badURL()
+    public function index() 
     {
-        $this->view->output($this->model->badURL());
+        $this->view->output($this->model->index());
     }
 
-    public function templateMissing()
-    {
-        $this->view->output($this->model->templateMissing());
-    }
+    // public function badURL()
+    // {
+    //     $this->view->output($this->model->badURL());
+    // }
 
-    public function viewMissing()
-    {
-        $this->view->output($this->model->viewMissing());
-    }
+    // public function templateMissing()
+    // {
+    //     $this->view->output($this->model->templateMissing());
+    // }
+
+    // public function viewMissing()
+    // {
+    //     $this->view->output($this->model->viewMissing());
+    // }
 }
