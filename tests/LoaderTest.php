@@ -2,75 +2,83 @@
 
 use \Core\helpers\Loader;
 use \Core\helpers\urlParser;
+use \Core\helpers\ControllerLoader;
 use PHPUnit\Framework\TestCase;
 
 class LoaderTest extends TestCase
 {
-    protected $loader;
     protected $routes;
+    protected $parser_stub;
 
     protected function setUp(): void
     {
-        $this->routes = array(
-            'home' => array('index', 'bar', 'login'),
-            'foo' => array('index','bar'),
-            'about' => array('people', 'company')
-        );
+        $this->routes = array('routes' => array());
+        $this->routes['default_controller'] = 'home';
+        $this->routes['default_action'] = 'index';
+        $this->routes['404_controller'] = 'error';
+        $this->routes['404_action'] = 'index';
 
-        $parser_stub = $this->createStub(URLParser::class);
-        $this->loader = new Loader($this->routes, $parser_stub);
+        $this->routes['routes']['home'] = array('index', 'login');
+        $this->routes['routes']['about'] = array('index', 'profile');
+        $this->routes['routes']['error'] = array('index');                           
+
+        $this->parser_stub = $this->createStub(URLParser::class);
+        $this->parser_stub->method('getAddtionalURLParams')->willReturn(array());
     }
 
     public function testNoParamsDefaultRoute()
     {
-        $parser_stub = $this->createStub(URLParser::class);
+        $this->parser_stub->method('getControllerValue')->willReturn('');
+        $this->parser_stub->method('getActionValue')->willReturn('');
 
-        $parser_stub->method('getControllerValue')->willReturn('');
-        $parser_stub->method('getActionValue')->willReturn('');
+        $loader = new Loader($this->routes, $this->parser_stub);
 
-        $this->loader = new Loader($this->routes, $parser_stub);
+        $this->assertSame('home', $loader->getController());
+        $this->assertSame('index', $loader->getAction());
+    }
 
-        $this->assertSame('home', $this->loader->getControllerName());
-        $this->assertSame('index', $this->loader->getAction());
+    public function testControllerParamDefaultController()
+    {
+        $this->parser_stub->method('getControllerValue')->willReturn('');
+        $this->parser_stub->method('getActionValue')->willReturn('index');
+
+        $loader = new Loader($this->routes, $this->parser_stub);
+
+        $this->assertSame('home', $loader->getController());
+        $this->assertSame('index', $loader->getAction());
     }
 
     public function testControllerParamDefaultAction()
     {
-        $parser_stub = $this->createStub(URLParser::class);
+        $this->parser_stub->method('getControllerValue')->willReturn('about');
+        $this->parser_stub->method('getActionValue')->willReturn('');
 
-        $parser_stub->method('getControllerValue')->willReturn('foo');
-        $parser_stub->method('getActionValue')->willReturn('');
+        $loader = new Loader($this->routes, $this->parser_stub);
 
-        $this->loader = new Loader($this->routes, $parser_stub);
-
-        $this->assertSame('foo', $this->loader->getControllerName());
-        $this->assertSame('index', $this->loader->getAction());
+        $this->assertSame('about', $loader->getController());
+        $this->assertSame('index', $loader->getAction());
     }
 
     public function testControllerActionParams()
     {
-        $parser_stub = $this->createStub(URLParser::class);
+        $this->parser_stub->method('getControllerValue')->willReturn('about');
+        $this->parser_stub->method('getActionValue')->willReturn('index');
 
-        $parser_stub->method('getControllerValue')->willReturn('foo');
-        $parser_stub->method('getActionValue')->willReturn('bar');
+        $loader = new Loader($this->routes, $this->parser_stub);
 
-        $this->loader = new Loader($this->routes, $parser_stub);
-
-        $this->assertSame('foo', $this->loader->getControllerName());
-        $this->assertSame('bar', $this->loader->getAction());
+        $this->assertSame('about', $loader->getController());
+        $this->assertSame('index', $loader->getAction());
     }
 
     public function testInvalidRoute()
     {
-        $parser_stub = $this->createStub(URLParser::class);
+        $this->parser_stub->method('getControllerValue')->willReturn('invalid');
+        $this->parser_stub->method('getActionValue')->willReturn('route');
 
-        $parser_stub->method('getControllerValue')->willReturn('invalid');
-        $parser_stub->method('getActionValue')->willReturn('route');
+        $loader = new Loader($this->routes, $this->parser_stub);
 
-        $this->loader = new Loader($this->routes, $parser_stub);
-
-        $this->assertSame('error', $this->loader->getControllerName());
-        $this->assertSame('badURL', $this->loader->getAction());
+        $this->assertSame('error', $loader->getController());
+        $this->assertSame('index', $loader->getAction());
     }
 
     /**
@@ -78,23 +86,18 @@ class LoaderTest extends TestCase
      */  
     public function testCheckRouteExists($controller, $action, $expected)
     {
-        $routes = array(
-            'home' => array('login'),
-            'about' => array('index', 'profile'),
-            'error' => array('404', 'template'),
-        );
-
-        $actual = $this->loader->routeExists($routes, $controller, $action);
+        $loader = new Loader($this->routes, $this->parser_stub);
+        $actual = $loader->routeExists($this->routes, $controller, $action);
         $this->assertSame($expected, $actual);
     }
 
     public function routeProvider(): array
     {
         return [
-            'valid route'  => ['home', 'login', true],
-            'does not match a controller or action' => ['my', 'route', false],
+            'valid route' => ['home', 'login', true],
             'matches a controller but not an action' => ['home', 'foo', false],
-            'matches an action but not controller' => ['foocontroller', 'profile', false]
+            'matches an action but not controller' => ['foocontroller', 'profile', false],
+            'does not match a controller or an action' => ['my', 'route', false]
         ];
-    } 
+    }
 }

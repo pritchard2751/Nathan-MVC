@@ -2,71 +2,61 @@
 
 namespace Core\helpers;
 
-class Loader {
-    const DEFAULT_CONTROLLER_NAME = 'home';
-    const DEFAULT_ACTION = 'index';
-
-    public $urlParser = null;
+class Loader 
+{
     private $routes = null;
-    private $controllerInstance = null;
-    private $controllerName = '';
-    private $classname = '';
+    private $urlParser = null;
+    private $controller_inst = null;
+    private $controller = '';
     private $action = '';
 
-    public function __construct(array $routes, $urlParser){
+    public function __construct(array $routes, URLParser $urlParser){
         $this->routes = $routes;
         $this->urlParser = $urlParser;
-        $notFound = false;
 
-        $controllerValue = $this->urlParser->getControllerValue();
-        $actionValue = $this->urlParser->getActionValue();
+        $controller_value = $this->urlParser->getControllerValue();
+        $action_value = $this->urlParser->getActionValue();
 
-        if (empty($actionValue)) {
-            $actionValue = self::DEFAULT_ACTION;
-            $this->action = $actionValue;
+        if (empty($controller_value)) {
+            $controller_value = $routes['default_controller'];
         }
 
-        if(!empty($controllerValue) && !empty($actionValue)){
-            $routeExists = $this->routeExists($this->routes, $controllerValue, $actionValue);
-            if(!$routeExists){
-                $notFound = true;
-            } else {
-                $this->controllerName = $controllerValue;
-                $this->action = $actionValue;
-            }
-        } else if (empty($controllerValue)) {
-            $this->controllerName = self::DEFAULT_CONTROLLER_NAME;
+        if (empty($action_value)) {
+            $action_value = $routes['default_action'];
         }
 
-        if($notFound) {
-            $this->controllerName = 'error';
-            $this->action = 'badURL';
+        $this->controller = $controller_value;
+        $this->action = $action_value;
+
+        if(!$this->routeExists($this->routes, $this->controller, $this->action)) {
+            $this->controller = $routes['404_controller'];
+            $this->action = $routes['404_action'];
         }
     }
 
-    // TODO: move verify and protect route elsewhere 
+    private function makeControllerClassname(string $controller): string {
+        $classname = ucfirst($controller) . 'Controller';
+        return '\\Controllers\\' . $classname;
+    }
+
+    public function createControllerInstance(): void { 
+        $classname = $this->makeControllerClassname($this->controller);
+        $this->controller_inst = new $classname($this->action, $this->urlParser);
+    }
+
     public function routeExists(array $routes, string $controller, string $action): bool {
-        if (!array_key_exists($controller, $routes)
-            || !in_array($action, $routes[$controller])) {
+        $routes = $routes['routes'];
+
+        if (!array_key_exists($controller, $routes) || 
+            !in_array($action, $routes[$controller])) {
                 return false;
             }
 
         return true;
     }
 
-    public function createControllerInstance() { 
-        $classname = $this->makeControllerClassname($this->controllerName);
-        $this->setControllerInstance($this->classname, $this->action, $this->urlParser->params);
-        $namespace = '\\Controllers\\' . $classname;
-        $this->controllerInstance = new $namespace($action, $params);
-    }
-
-    public function makeControllerClassname(string $controllerName): string {
-        return ucfirst($controllerName) . "Controller";
-    }
-
-    public function getControllerName(): string {
-        return $this->controllerName;
+    public function getController(): string {
+        return $this->controller;
     }
 
     public function getAction(): string {
@@ -74,6 +64,6 @@ class Loader {
     }
 
     public function getControllerInstance(): BaseController {
-        return $this->controllerInstance;
+        return $this->controller_inst;
     }
 }
