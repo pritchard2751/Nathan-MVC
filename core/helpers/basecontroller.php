@@ -1,91 +1,57 @@
 <?php
-/*
- * Purpose: abstract class from which controllers extend
- */
 
 namespace Core\helpers;
 
 class BaseController
 {
+    protected $urlParser = null;
+    protected $model = null;
+    protected $view = null;
+    protected $action = '';
 
-    protected $urlValues;
-    protected $action;
-    protected $model;
-    protected $view;
-
-    /**
-     * Sets action
-     * Sets urlValues
-     * @param string $action requested action
-     * @param array[] $urlValues other URL parameters
-     * @param array[] $sessionNames list of session names that must be set in order to access a URL/page
-     */
-    public function __construct($action, $urlValues, $sessionNames = array())
+    public function __construct(string $action, URLParser $urlParser)
     {
         $this->action = $action;
-        $this->urlValues = $urlValues;
+        $this->urlParser = $urlParser;
 
-        //re-direct if specified sessions are not set
-        if (!empty($sessionNames)) {
-            $this->protect($sessionNames);
-        }
+        $class_name = get_class($this);
 
-        $className = get_class($this);
-
-        //instantiate the view object
-        //the class name relates to the sub-folder in the 'views' folder
-        //the action relates to the file name within the sub-folder
-        //TODO: also set the model in here, with the ability to override in the class?
-        $this->view = new View($className, $action);
+        // instantiate the view object
+        // the class name relates to the sub-folder in the 'views' folder
+        // the action relates to the file name within the sub-folder
+        // TODO: consider setting the model in here, with the ability to override in the class?
+        $this->view = new View($class_name, $action);
     }
 
-    public function protect($sessionNames)
-    {
-        $redirectTo = array("controller" => "login",
-            "action" => "index");
+    // TODO: Need to consider a basic way of protecting routes and where to do it
+    // public function protect($sessionNames)
+    // {
+    //     $redirectTo = array("controller" => "login",
+    //         "action" => "index");
 
-        foreach ($sessionNames as $session) {
-            if (!isset($_SESSION[$session])) {
-                $this->redirect($redirectTo);
-            }
-        }
+    //     foreach ($sessionNames as $session) {
+    //         if (!isset($_SESSION[$session])) {
+    //             $this->redirect($redirectTo);
+    //         }
+    //     }
 
-        return;
-    }
+    //     return;
+    // }
 
-    /**
-     * Execute the requested action
-     * @param array[] additional URL parameter key/value pairs
-     */
     public function executeAction()
     {
-        // TODO: this could easily raise an error if the action does not exist, needs to be handled by being redirected
-        call_user_func_array(array($this, $this->action), $this->urlValues);
+        if(!method_exists($this, $this->action)) {
+            $this->redirect(array('controller' => 'error'));
+        }
+
+        $params = $this->urlParser->getAddtionalURLParams();
+        call_user_func_array(array($this, $this->action), $params);
     }
 
-    public function redirect($params)
+    public function redirect(array $redirect_to)
     {
-        if (is_array($params)) {
-
-            $url = "?c=" . $params["controller"] . "&a=" . $params["action"];
-
-            if (isset($params["params"]) && is_array($params["params"])) {
-                foreach ($params["params"] as $param => $value) {
-                    $url .= "&" . $param . "=" . $value;
-                }
-            }
-
-            header("Location:" . $url);
-
-        } else if ($params == "error") { //TODO: don't need this
-
-            $redirectTo = array(
-                "controller" => "error",
-                "action" => "badURL",
-            );
-
-            $this->redirect($redirectTo);
-        }
+        $url = $this->urlParser->constructURL($redirect_to);
+        header("Location:" . $url);
 
         exit;
     }
