@@ -1,10 +1,11 @@
 <?php
+$routes = array('routes' => array());
 
-//define accepted controller => action routes
-$routes = array(
-    "home" => array("index"),
-    "about" => array("index"),
-    "error" => array("badURL",
-        "templateMissing",
-        "viewMissing"),
-);
+$routes['default_controller'] = 'home';
+$routes['default_action'] = 'index';
+$routes['404_controller'] = 'error';
+$routes['404_action'] = 'index';
+
+$routes['routes']['home'] = array('index');
+$routes['routes']['about'] = array('index');
+$routes['routes']['error'] = array('index','templateMissing', 'viewMissing');
