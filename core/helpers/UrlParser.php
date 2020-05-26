@@ -9,7 +9,7 @@ class URLParser
     
     private $controller_value = '';
     private $action_value = '';
-    private $params = null;
+    private $params = array();
 
     public function __construct($params) 
     {
@@ -34,17 +34,46 @@ class URLParser
         }
     }
 
-    public function getControllerValue() 
+    private function getURLSeparator(string $str) : string {
+       return (strpos($str, '?') === false) ? '?' : '&';
+    }
+
+    public function constructURL(array $redirect_to): string
+    {
+        $url = '';
+
+        if(isset($redirect_to['controller'])){
+            $s = $this->getURLSeparator($url);
+            $url .= $s . self::CONTROLLER_PARAM . '=' . $redirect_to['controller'];
+        } 
+
+        if(isset($redirect_to['action'])) {
+            echo "URL:  " . $url;
+            $s = $this->getURLSeparator($url);
+            $url .= $s . self::ACTION_PARAM . '=' . $redirect_to['action'];
+        }
+
+        if (isset($redirect_to['params'])) {
+            foreach ($redirect_to['params'] as $param => $value) {
+                $s = $this->getURLSeparator($url);
+                $url .= $s . $param . '=' . $value;
+            }
+        }
+
+        return $url;
+    }
+
+    public function getControllerValue(): string
     {
         return $this->controller_value;
     }
 
-    public function getActionValue() 
+    public function getActionValue(): string 
     {
         return $this->action_value;
     }
 
-    public function getAddtionalURLParams() 
+    public function getAddtionalURLParams(): array
     {
         return $this->params;
     }

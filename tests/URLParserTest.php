@@ -37,4 +37,41 @@ class URLParserTest extends TestCase
         $actual = $this->URLParser->getAddtionalURLParams();
         $this->assertEquals($expected, $actual);
     }
+
+    /**
+     * @dataProvider redirectParamsProvider
+     */
+    public function testConstructURL($redirect_params, $expected_url)
+    {
+        $actual = $this->URLParser->constructURL($redirect_params);
+        $this->assertSame($expected_url, $actual); 
+    }
+
+    public function redirectParamsProvider(): array
+    {
+        return [
+            'redirect' => [
+                array('controller' => 'home', 'action' => 'index'), 
+                '?c=home&a=index'],
+            'redirect with additional params' => [
+                array('controller' => 'about', 'action' => 'people', 
+                'params' => array('additional' => 1, 'another' => 'thing')),
+                '?c=about&a=people&additional=1&another=thing'],
+            'redirect with incorrect keys' => [
+                array ('c' => 'home', 'a' => 'index', 'more' => array('another' => 1)), 
+                ''],
+            'redirect with controller only' => [
+                array('controller' => 'about'), 
+                '?c=about'],
+            'redirect with action only' => [
+                array('action' => 'company'), 
+                '?a=company'],
+            'redirect with additional params only' => [
+                array('params' => array('additional' => 1, 'another' => 'thing')), 
+                '?additional=1&another=thing'],
+            'redirect with controller only' => [
+                array('controller' => 'about'), 
+                '?c=about']
+        ];
+    }
 }
